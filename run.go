@@ -53,7 +53,7 @@ type runner struct {
 	storage *storage.Storage
 	fmt     Formatter
 
-	maxRetry int
+	maxRetries int
 }
 
 func (r *runner) concurrent(rate int) (failed bool) {
@@ -113,8 +113,6 @@ func (r *runner) concurrent(rate int) (failed bool) {
 					<-queue // free a space in queue
 				}()
 
-				retry := r.maxRetry
-
 				if r.stopOnFailure && *fail {
 					return
 				}
@@ -136,25 +134,9 @@ func (r *runner) concurrent(rate int) (failed bool) {
 
 				err := suite.runPickle(pickle)
 				if suite.shouldFail(err) {
-					// retry the pickle
-					for retry > 0 {
-						fmt.Println(colors.Yellow("Retrying pickle"))
-						err = suite.runPickle(pickle)
-
-						// retry succeeded
-						if err == nil {
-							return
-						}
-
-						retry--
-					}
-
-					// error still persisted after retries
-					if suite.shouldFail(err) {
-						copyLock.Lock()
-						*fail = true
-						copyLock.Unlock()
-					}
+					copyLock.Lock()
+					*fail = true
+					copyLock.Unlock()
 				}
 			}
 
@@ -303,7 +285,7 @@ func runWithOptions(suiteName string, runner runner, opt Options) int {
 	runner.strict = opt.Strict
 	runner.defaultContext = opt.DefaultContext
 	runner.testingT = opt.TestingT
-	runner.maxRetry = opt.MaxRetry
+	runner.maxRetries = opt.MaxRetries
 
 	// store chosen seed in environment, so it could be seen in formatter summary report
 	os.Setenv("GODOG_SEED", strconv.FormatInt(runner.randomSeed, 10))
