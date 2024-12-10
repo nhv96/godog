@@ -98,6 +98,12 @@ func (o *onFlushFormatter) Undefined(pickle *messages.Pickle, step *messages.Pic
 	})
 }
 
+func (o *onFlushFormatter) Retry(pickle *messages.Pickle, step *messages.PickleStep, definition *formatters.StepDefinition, err error) {
+	o.fns = append(o.fns, func() {
+		o.fmt.Retry(pickle, step, definition, err)
+	})
+}
+
 // Flush the logs.
 func (o *onFlushFormatter) Flush() {
 	o.mu.Lock()

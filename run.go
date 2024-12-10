@@ -71,6 +71,7 @@ func (r *runner) concurrent(rate int) (failed bool) {
 			storage:        r.storage,
 			defaultContext: r.defaultContext,
 			testingT:       r.testingT,
+			maxRetries:     r.maxRetries,
 		},
 	}
 	if r.testSuiteInitializer != nil {

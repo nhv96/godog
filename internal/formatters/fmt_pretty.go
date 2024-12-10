@@ -134,6 +134,16 @@ func (f *Pretty) Pending(pickle *messages.Pickle, step *messages.PickleStep, mat
 	f.printStep(pickle, step)
 }
 
+// Retry captures the retried step
+func (f *Pretty) Retry(pickle *messages.Pickle, step *messages.PickleStep, match *formatters.StepDefinition, err error) {
+	f.Base.Retry(pickle, step, match, err)
+
+	f.Lock.Lock()
+	defer f.Lock.Unlock()
+
+	f.printStep(pickle, step)
+}
+
 func (f *Pretty) printFeature(feature *messages.Feature) {
 	fmt.Fprintln(f.out, keywordAndName(feature.Keyword, feature.Name))
 	if strings.TrimSpace(feature.Description) != "" {
@@ -432,11 +442,19 @@ func (f *Pretty) printStep(pickle *messages.Pickle, pickleStep *messages.PickleS
 	}
 
 	pickleStepResult := f.Storage.MustGetPickleStepResult(pickleStep.Id)
-	text := s(f.indent*2) + pickleStepResult.Status.Color()(strings.TrimSpace(astStep.Keyword)) + " " + pickleStepResult.Status.Color()(pickleStep.Text)
+	pickleStatusClr := pickleStepResult.Status.Color()
+
+	text := s(f.indent*2) + pickleStatusClr(strings.TrimSpace(astStep.Keyword)) + " " + pickleStatusClr(pickleStep.Text)
+
+	if pickleStepResult.Status == retry {
+		text += pickleStatusClr(fmt.Sprintf(" (attempt %d)", pickleStepResult.RunAttempt))
+	}
+
 	if pickleStepResult.Def != nil {
 		text += s(maxLength - stepLength + 1)
 		text += blackb("# " + DefinitionID(pickleStepResult.Def))
 	}
+
 	fmt.Fprintln(f.out, text)
 
 	if pickleStep.Argument != nil {

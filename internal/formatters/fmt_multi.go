@@ -104,6 +104,12 @@ func (r repeater) Ambiguous(pickle *messages.Pickle, step *messages.PickleStep, 
 	}
 }
 
+func (r repeater) Retry(pickle *messages.Pickle, step *messages.PickleStep, definition *formatters.StepDefinition, err error) {
+	for _, f := range r {
+		f.Retry(pickle, step, definition, err)
+	}
+}
+
 // Summary triggers Summary for all added formatters.
 func (r repeater) Summary() {
 	for _, f := range r {

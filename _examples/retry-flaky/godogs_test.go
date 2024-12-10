@@ -16,7 +16,7 @@ func Test_RetryFlaky(t *testing.T) {
 		Options: &godog.Options{
 			Format:     "pretty",
 			Paths:      []string{"features/retry.feature"},
-			MaxRetries: 5,
+			MaxRetries: 2,
 		},
 	}
 
@@ -32,7 +32,7 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a step that passes the second time`, func(ctx context.Context) (context.Context, error) {
 		secondTimePass++
 		if secondTimePass < 2 {
-			return ctx, godog.ErrRetry
+			return ctx, fmt.Errorf("unexpected network connection, %w", godog.ErrRetry)
 		}
 		return ctx, nil
 	})
@@ -41,7 +41,7 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a step that passes the third time`, func(ctx context.Context) (context.Context, error) {
 		thirdTimePass++
 		if thirdTimePass < 3 {
-			return ctx, godog.ErrRetry
+			return ctx, fmt.Errorf("unexpected network connection, %w", godog.ErrRetry)
 		}
 		return ctx, nil
 	})
