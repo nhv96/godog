@@ -34,6 +34,9 @@ var ErrPending = fmt.Errorf("step implementation is pending")
 // ErrSkip should be returned by step definition or a hook if scenario and further steps are to be skipped.
 var ErrSkip = fmt.Errorf("skipped")
 
+// ErrRetry should be returned by step definition to stop further scenario execution and schedule the step for retries.
+var ErrRetry = fmt.Errorf("retry step")
+
 // StepResultStatus describes step result.
 type StepResultStatus = models.StepResultStatus
 
@@ -50,6 +53,8 @@ const (
 	StepPending = models.Pending
 	// StepAmbiguous indicates step text matches more than one step def
 	StepAmbiguous = models.Ambiguous
+	// StepRetry indicates the step that need retry.
+	StepRetry = models.Retry
 )
 
 type suite struct {
@@ -62,6 +67,7 @@ type suite struct {
 	randomSeed    int64
 	stopOnFailure bool
 	strict        bool
+	maxRetries    int
 
 	defaultContext context.Context
 	testingT       *testing.T
@@ -574,6 +580,19 @@ func (s *suite) runSteps(ctx context.Context, pickle *Scenario, steps []*Step) (
 		isLast := i == len(steps)-1
 		isFirst := i == 0
 		ctx, stepErr = s.runStep(ctx, pickle, step, scenarioErr, isFirst, isLast)
+
+		if errors.Is(stepErr, ErrRetry) {
+			allowedAttempts := 0
+
+			for allowedAttempts < s.maxRetries {
+				allowedAttempts++
+				ctx, stepErr = s.runStep(ctx, pickle, step, scenarioErr, isFirst, isLast)
+				if stepErr == nil {
+					break
+				}
+			}
+		}
+
 		if scenarioErr == nil || s.shouldFail(stepErr) {
 			scenarioErr = stepErr
 		}
