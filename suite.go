@@ -276,7 +276,7 @@ func (s *suite) runStep(ctx context.Context, pickle *Scenario, step *Step, scena
 		s.storage.MustInsertPickleStepResult(sr)
 
 		s.fmt.Undefined(pickle, step, match.GetInternalStepDefinition())
-		return ctx, ErrUndefined
+		return ctx, fmt.Errorf("%w: %s", ErrUndefined, step.Text)
 	}
 
 	if scenarioErr != nil {
@@ -467,7 +467,7 @@ func (s *suite) maybeSubSteps(ctx context.Context, result interface{}) (context.
 		}
 
 		if def == nil {
-			return ctx, ErrUndefined
+			return ctx, fmt.Errorf("%w: %s", ErrUndefined, text)
 		} else {
 			ctx, err = s.runSubStep(ctx, text, def)
 			if err != nil {
@@ -628,7 +628,7 @@ func (s *suite) runPickle(pickle *messages.Pickle) (err error) {
 		s.storage.MustInsertPickleResult(pr)
 
 		s.fmt.Pickle(pickle)
-		return ErrUndefined
+		return fmt.Errorf("%w: no steps in scenario", ErrUndefined)
 	}
 
 	// Before scenario hooks are called in context of first evaluated step
