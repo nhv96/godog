@@ -1,9 +1,7 @@
-Feature: godog should be able to retry flaky tests
-    # Some Cucumber implementations support a Retry mechanism, where test cases that fail
-    # can be retried up to a limited number of attempts in the same test run.
-
-    # Non-passing statuses other than FAILED won't trigger a retry, as they are not
-    # going to pass however many times we attempt them.
+Feature: Godog should be able to retry flaky tests
+    In order to help Go developers deal with flaky tests
+    As a test suite
+    I need to be able to return godog.Err to mark which steps should be retry
 
     Scenario: Test cases that pass aren't retried
         Given a step that always passes
