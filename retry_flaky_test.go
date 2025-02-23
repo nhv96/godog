@@ -84,6 +84,18 @@ Feature: retry flaky steps
 
   Scenario: Test cases that fail are retried if within the limit # RetryFlaky:6
     Given a step that passes the second time                     # retry_flaky_test.go:56 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.2
+    unexpected network connection, retry step
+
+  Scenario: Test cases that fail are retried if within the limit # RetryFlaky:6
+    Given a step that passes the second time                     # retry_flaky_test.go:56 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.2
+
+  Scenario: Test cases that fail will continue to retry up to the limit # RetryFlaky:9
+    Given a step that passes the third time                             # retry_flaky_test.go:65 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.3
+    unexpected network connection, retry step
+
+  Scenario: Test cases that fail will continue to retry up to the limit # RetryFlaky:9
+    Given a step that passes the third time                             # retry_flaky_test.go:65 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.3
+    unexpected network connection, retry step
 
   Scenario: Test cases that fail will continue to retry up to the limit # RetryFlaky:9
     Given a step that passes the third time                             # retry_flaky_test.go:65 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.3
@@ -114,7 +126,9 @@ func aNonexistentStep() error {
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(` + "`^a non-existent step$`" + `, aNonexistentStep)
-}`
+}
+
+`
 
 	actualOutput, err := io.ReadAll(output)
 	require.NoError(t, err)
