@@ -46,7 +46,12 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 		return ctx, nil
 	})
 
+	fifthTimePass := 0
 	sc.Step(`^a step that always fails`, func(ctx context.Context) (context.Context, error) {
-		return ctx, fmt.Errorf("must fail")
+		fifthTimePass++
+		if fifthTimePass < 5 {
+			return ctx, fmt.Errorf("must fail, %w", godog.ErrRetry)
+		}
+		return ctx, nil
 	})
 }
