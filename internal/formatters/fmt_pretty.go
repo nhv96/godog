@@ -442,13 +442,7 @@ func (f *Pretty) printStep(pickle *messages.Pickle, pickleStep *messages.PickleS
 	}
 
 	pickleStepResult := f.Storage.MustGetPickleStepResult(pickleStep.Id)
-	pickleStatusClr := pickleStepResult.Status.Color()
-
-	text := s(f.indent*2) + pickleStatusClr(strings.TrimSpace(astStep.Keyword)) + " " + pickleStatusClr(pickleStep.Text)
-
-	if pickleStepResult.Status == retry {
-		text += pickleStatusClr(fmt.Sprintf(" (attempt %d)", pickleStepResult.RunAttempt))
-	}
+	text := s(f.indent*2) + pickleStepResult.Status.Color()(strings.TrimSpace(astStep.Keyword)) + " " + pickleStepResult.Status.Color()(pickleStep.Text)
 
 	if pickleStepResult.Def != nil {
 		text += s(maxLength - stepLength + 1)
