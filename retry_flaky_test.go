@@ -70,8 +70,13 @@ Feature: retry flaky steps
 				return ctx, nil
 			})
 
+			fifthTimePass := 0
 			ctx.Step(`^a step that always fails`, func(ctx context.Context) (context.Context, error) {
-				return ctx, fmt.Errorf("must fail")
+				fifthTimePass++
+				if fifthTimePass < 5 {
+					return ctx, fmt.Errorf("must fail, %w", ErrRetry)
+				}
+				return ctx, nil
 			})
 		},
 		Options: &opts,
@@ -84,25 +89,13 @@ Feature: retry flaky steps
 
   Scenario: Test cases that fail are retried if within the limit # RetryFlaky:6
     Given a step that passes the second time                     # retry_flaky_test.go:56 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.2
-    unexpected network connection, retry step
-
-  Scenario: Test cases that fail are retried if within the limit # RetryFlaky:6
-    Given a step that passes the second time                     # retry_flaky_test.go:56 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.2
-
-  Scenario: Test cases that fail will continue to retry up to the limit # RetryFlaky:9
-    Given a step that passes the third time                             # retry_flaky_test.go:65 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.3
-    unexpected network connection, retry step
-
-  Scenario: Test cases that fail will continue to retry up to the limit # RetryFlaky:9
-    Given a step that passes the third time                             # retry_flaky_test.go:65 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.3
-    unexpected network connection, retry step
 
   Scenario: Test cases that fail will continue to retry up to the limit # RetryFlaky:9
     Given a step that passes the third time                             # retry_flaky_test.go:65 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.3
 
   Scenario: Test cases won't retry after failing more than the limit # RetryFlaky:12
-    Given a step that always fails                                   # retry_flaky_test.go:73 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.4
-    must fail
+    Given a step that always fails                                   # retry_flaky_test.go:74 -> github.com/cucumber/godog.Test_RetryFlakySteps.func1.4
+    must fail, retry step
 
   Scenario: Test cases won't retry when the status is UNDEFINED # RetryFlaky:15
     Given a non-existent step
@@ -111,7 +104,7 @@ Feature: retry flaky steps
 
   Scenario: Test cases won't retry after failing more than the limit # RetryFlaky:12
     Given a step that always fails # RetryFlaky:13
-      Error: must fail
+      Error: must fail, retry step
 
 
 5 scenarios (3 passed, 1 failed, 1 undefined)
