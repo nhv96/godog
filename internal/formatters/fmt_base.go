@@ -89,14 +89,10 @@ func (f *Base) Pending(*messages.Pickle, *messages.PickleStep, *formatters.StepD
 func (f *Base) Ambiguous(*messages.Pickle, *messages.PickleStep, *formatters.StepDefinition, error) {
 }
 
-// Retry captures step needed to be retry.
-func (f *Base) Retry(*messages.Pickle, *messages.PickleStep, *formatters.StepDefinition, error) {
-}
-
 // Summary renders summary information.
 func (f *Base) Summary() {
 	var totalSc, passedSc, undefinedSc int
-	var totalSt, passedSt, failedSt, skippedSt, pendingSt, undefinedSt, ambiguousSt, retrySt int
+	var totalSt, passedSt, failedSt, skippedSt, pendingSt, undefinedSt, ambiguousSt int
 
 	pickleResults := f.Storage.MustGetPickleResults()
 	for _, pr := range pickleResults {
@@ -129,9 +125,6 @@ func (f *Base) Summary() {
 			case pending:
 				prStatus = pending
 				pendingSt++
-			case retry:
-				prStatus = retry
-				retrySt++
 			}
 		}
 
@@ -149,10 +142,6 @@ func (f *Base) Summary() {
 	if failedSt > 0 {
 		parts = append(parts, red(fmt.Sprintf("%d failed", failedSt)))
 		steps = append(steps, red(fmt.Sprintf("%d failed", failedSt)))
-	}
-	if retrySt > 0 {
-		parts = append(parts, yellow(fmt.Sprintf("%d retried", retrySt)))
-		steps = append(steps, yellow(fmt.Sprintf("%d retried", retrySt)))
 	}
 	if pendingSt > 0 {
 		parts = append(parts, yellow(fmt.Sprintf("%d pending", pendingSt)))

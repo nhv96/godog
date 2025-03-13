@@ -134,16 +134,6 @@ func (f *Pretty) Pending(pickle *messages.Pickle, step *messages.PickleStep, mat
 	f.printStep(pickle, step)
 }
 
-// Retry captures the retried step
-func (f *Pretty) Retry(pickle *messages.Pickle, step *messages.PickleStep, match *formatters.StepDefinition, err error) {
-	f.Base.Retry(pickle, step, match, err)
-
-	f.Lock.Lock()
-	defer f.Lock.Unlock()
-
-	f.printStep(pickle, step)
-}
-
 func (f *Pretty) printFeature(feature *messages.Feature) {
 	fmt.Fprintln(f.out, keywordAndName(feature.Keyword, feature.Name))
 	if strings.TrimSpace(feature.Description) != "" {

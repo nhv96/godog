@@ -71,7 +71,6 @@ type Formatter interface {
 	Undefined(*messages.Pickle, *messages.PickleStep, *StepDefinition)
 	Pending(*messages.Pickle, *messages.PickleStep, *StepDefinition)
 	Ambiguous(*messages.Pickle, *messages.PickleStep, *StepDefinition, error)
-	Retry(*messages.Pickle, *messages.PickleStep, *StepDefinition, error)
 	Summary()
 }
 
