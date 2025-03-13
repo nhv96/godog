@@ -433,12 +433,10 @@ func (f *Pretty) printStep(pickle *messages.Pickle, pickleStep *messages.PickleS
 
 	pickleStepResult := f.Storage.MustGetPickleStepResult(pickleStep.Id)
 	text := s(f.indent*2) + pickleStepResult.Status.Color()(strings.TrimSpace(astStep.Keyword)) + " " + pickleStepResult.Status.Color()(pickleStep.Text)
-
 	if pickleStepResult.Def != nil {
 		text += s(maxLength - stepLength + 1)
 		text += blackb("# " + DefinitionID(pickleStepResult.Def))
 	}
-
 	fmt.Fprintln(f.out, text)
 
 	if pickleStep.Argument != nil {
