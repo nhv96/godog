@@ -201,6 +201,27 @@ func (s *suite) runStep(ctx context.Context, pickle *Scenario, step *Step, scena
 			return
 		}
 
+		// the step is marked to retry
+		if errors.Is(err, ErrRetry) {
+			var sr models.PickleStepResult
+			sr = s.storage.GetPickleStepResultByStepID(step.Id)
+			if sr.PickleID == pickle.Id && sr.PickleStepID == step.Id {
+				if sr.RunAttempt >= s.maxRetries {
+					sr.Status = models.Failed
+					sr.Err = err
+
+					s.storage.MustInsertPickleStepResult(sr)
+					s.fmt.Failed(pickle, step, match.GetInternalStepDefinition(), err)
+				} else {
+					sr.RunAttempt++
+				}
+			} else {
+				sr = models.NewStepResult(models.Retry, pickle.Id, step.Id, match, pickledAttachments, nil)
+			}
+			s.storage.MustInsertPickleStepResult(sr)
+			return
+		}
+
 		switch {
 		case err == nil:
 			sr := models.NewStepResult(models.Passed, pickle.Id, step.Id, match, pickledAttachments, nil)
@@ -218,23 +239,6 @@ func (s *suite) runStep(ctx context.Context, pickle *Scenario, step *Step, scena
 			sr := models.NewStepResult(models.Ambiguous, pickle.Id, step.Id, match, pickledAttachments, err)
 			s.storage.MustInsertPickleStepResult(sr)
 			s.fmt.Ambiguous(pickle, step, match.GetInternalStepDefinition(), err)
-		case errors.Is(err, ErrRetry):
-			// retrieve the step result if exist,
-			// if the step has used all retry attempts, mark it as failed,
-			// otherwise store a new step result record.
-			var sr models.PickleStepResult
-			sr = s.storage.GetPickleStepResult(step.Id)
-			if sr.PickleID == pickle.Id && sr.PickleStepID == step.Id {
-				if sr.RunAttempt >= s.maxRetries {
-					sr.Status = models.Failed
-					s.fmt.Failed(pickle, step, match.GetInternalStepDefinition(), err)
-				} else {
-					sr.RunAttempt++
-				}
-			} else {
-				sr = models.NewStepResult(models.Retry, pickle.Id, step.Id, match, pickledAttachments, err)
-			}
-			s.storage.MustUpsertPickleStepResult(sr)
 		default:
 			sr := models.NewStepResult(models.Failed, pickle.Id, step.Id, match, pickledAttachments, err)
 			s.storage.MustInsertPickleStepResult(sr)
