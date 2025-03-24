@@ -279,26 +279,8 @@ func (s *Storage) MustGetFeatures() (fs []*models.Feature) {
 	return
 }
 
-// MustUpsertPickleStepResult inserts a new step result if none exists, otherwise update it's status, run attempt and error.
-func (s *Storage) MustUpsertPickleStepResult(psr models.PickleStepResult) {
-	stepID := psr.PickleStepID
-
-	v := s.first(tablePickleStepResult, tablePickleStepResultIndexPickleStepID, stepID)
-	if v != nil {
-		sr := v.(models.PickleStepResult)
-		sr.Status = psr.Status
-		sr.Err = psr.Err
-		sr.RunAttempt = psr.RunAttempt
-
-		s.mustInsert(tablePickleStepResult, sr)
-		return
-	}
-
-	s.mustInsert(tablePickleStepResult, psr)
-}
-
-// GetPickleStepResult will retrieve a pickle step result by id and panic on error.
-func (s *Storage) GetPickleStepResult(id string) models.PickleStepResult {
+// GetPickleStepResultByStepID will retrieve a pickle step result by id and panic on error.
+func (s *Storage) GetPickleStepResultByStepID(id string) models.PickleStepResult {
 	v := s.first(tablePickleStepResult, tablePickleStepResultIndexPickleStepID, id)
 	if v != nil {
 		return v.(models.PickleStepResult)
