@@ -128,7 +128,4 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 	assert.Equal(t, exitFailure, status)
 	assert.Equal(t, expected, string(actualOutput))
-
-	// TODO: for debug, remove this when done
-	fmt.Println(string(actualOutput))
 }
